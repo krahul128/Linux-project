@@ -1,0 +1,148 @@
+#!/bin/bash
+
+# Function to add a user
+add_user(){
+    echo "ADDING A NEW USER"
+    echo "Enter the username you want to add:"
+    read USERNAME
+    
+    # Check if the username is not empty
+    if [ -z "$USERNAME" ]; then
+        echo "Username cannot be empty. Aborting..."
+        return 1
+    fi
+    
+    # Add the user
+    sudo useradd -m "$USERNAME"
+    
+    # Set password for the user
+    sudo passwd "$USERNAME"
+    
+    echo "User $USERNAME has been added."
+}
+
+# Function to delete a user
+delete_user(){
+    echo "DELETING A USER"
+    echo "Enter the username you want to delete:"
+    read USERNAME
+    
+    # Check if the username is not empty
+    if [ -z "$USERNAME" ]; then
+        echo "Username cannot be empty. Aborting..."
+        return 1
+    fi
+    
+    # Delete the user
+    sudo userdel -r "$USERNAME"
+    
+    echo "User $USERNAME has been deleted."
+}
+
+# Function to reset a user's password
+reset_password(){
+    echo "RESET USER PASSWORD"
+    echo "Enter the username whose password you want to reset:"
+    read USERNAME
+    
+    # Check if the username is not empty
+    if [ -z "$USERNAME" ]; then
+        echo "Username cannot be empty. Aborting..."
+        return 1
+    fi
+    
+    # Reset password for the user
+    sudo passwd "$USERNAME"
+    
+    echo "Password reset for user $USERNAME."
+}
+
+# Function to list all users on the system
+list_users(){
+    echo "LISTING USERS ON THE SYSTEM"
+    echo "User accounts on the system:"
+    awk -F: '{print $1}' /etc/passwd
+}
+
+# Function to create a group and add a user to it
+create_group(){
+    echo "CREATE GROUP AND ADD USER"
+    echo "Enter the name of the group you want to create:"
+    read groupname
+    
+    # Check if the group name is not empty
+    if [ -z "$groupname" ]; then
+        echo "Group name cannot be empty. Aborting..."
+        return 1
+    fi
+    
+    # Create the group
+    sudo groupadd "$groupname"
+    echo "Group $groupname has been added."
+    
+    # Add user to the group
+    echo "Enter the username you want to add to the group:"
+    read USERNAME
+    
+    # Add user to the group
+    sudo usermod -aG "$groupname" "$USERNAME"
+    echo "User $USERNAME has been added to group $groupname."
+}
+
+# Function to take a backup of a directory
+backup(){
+    echo "TAKE A BACKUP"
+    echo "Creating a backup..."
+    
+    # Define source and destination directories
+    src_dir="/home/ubuntu/scripts"
+    tgt_dir="/home/ubuntu/backups"
+    
+    # Create the backup directory if it doesn't exist
+    mkdir -p "$tgt_dir"
+    
+    # Create a timestamp to use in the backup filename
+    TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+    
+    # Create the backup filename using the timestamp
+    BACKUP_FILENAME="backup_${TIMESTAMP}.tar.gz"
+    
+    # Create the backup
+    tar -czvf "${tgt_dir}/${BACKUP_FILENAME}" "${src_dir}" && echo "Backup created successfully: ${tgt_dir}/${BACKUP_FILENAME}"
+}
+
+# Main script
+echo "Welcome to the user management script!"
+echo "Select an option:"
+echo "1. Add User"
+echo "2. Delete User"
+echo "3. Reset User Password"
+echo "4. List Users"
+echo "5. Create Group and Add User"
+echo "6. Take a Backup"
+
+read OPTION
+
+case $OPTION in
+    1)
+        add_user
+        ;;
+    2)
+        delete_user
+        ;;
+    3)
+        reset_password
+        ;;
+    4)
+        list_users
+        ;;
+    5)
+        create_group
+        ;;
+    6)
+        backup
+        ;;
+    *)
+        echo "Invalid option. Exiting..."
+        ;;
+esac
